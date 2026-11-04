@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.matrix {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.matrix__label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.matrix__name {
+  font-size: var(--text-lg);
+}
+
+.matrix__size,
+.matrix__note {
+  color: var(--color-ink-soft);
+  font-family: var(--font-numbers);
+  font-size: var(--text-xs);
+}
+
+.matrix__note {
+  max-width: 24ch;
+}
+
+.matrix__scroll {
+  overflow-x: auto;
+}
+
+.matrix__table {
+  position: relative;
+  border-collapse: collapse;
+  font-family: var(--font-numbers);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+
+  // The brackets of the matrix: a vertical line with two short serifs on each side.
+  &::before,
+  &::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--space-2);
+    border: 2px solid var(--color-ink);
+    content: '';
+  }
+
+  &::before {
+    left: 0;
+    border-right: 0;
+  }
+
+  &::after {
+    right: 0;
+    border-left: 0;
+  }
+
+  td {
+    padding: var(--space-1) var(--space-3);
+    text-align: right;
+    white-space: nowrap;
+  }
+}

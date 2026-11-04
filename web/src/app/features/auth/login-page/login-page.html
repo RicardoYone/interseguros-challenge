@@ -1,0 +1,38 @@
+<main class="cover">
+  <p class="cover__eyebrow">Cuaderno de cálculo</p>
+  <h1 class="cover__title"><em>A</em> = <em>QR</em></h1>
+  <p class="cover__intro">Descompón cualquier matriz rectangular y comprueba el resultado.</p>
+
+  <form class="cover__form" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="field">
+      <span class="field__label">Usuario</span>
+      <input
+        id="username"
+        class="field__input"
+        formControlName="username"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+      />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Contraseña</span>
+      <input
+        id="password"
+        class="field__input"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+    </label>
+
+    @if (errorMessage(); as message) {
+      <p class="pen-note" role="alert">{{ message }}</p>
+    }
+
+    <button class="pen-button" type="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Entrando…' : 'Abrir el cuaderno' }}
+    </button>
+  </form>
+</main>

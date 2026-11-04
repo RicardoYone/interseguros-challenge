@@ -1,0 +1,83 @@
+<header class="masthead">
+  <div>
+    <p class="masthead__eyebrow">Cuaderno de cálculo</p>
+    <h1 class="masthead__title"><em>A</em> = <em>QR</em></h1>
+  </div>
+  <button class="masthead__logout" type="button" data-action="logout" (click)="logout()">
+    Cerrar sesión
+  </button>
+</header>
+
+<main class="sheet">
+  <form class="exercise" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="exercise__label" for="matrix">Escribe la matriz <em>A</em></label>
+    <p id="matrix-hint" class="exercise__hint">
+      Una fila por línea, con los valores separados por espacios o comas.
+    </p>
+
+    <div class="exercise__brackets">
+      <textarea
+        id="matrix"
+        class="exercise__input"
+        formControlName="matrix"
+        rows="6"
+        spellcheck="false"
+        autocomplete="off"
+        aria-describedby="matrix-hint"
+        [attr.aria-invalid]="!parsed().valid"
+      ></textarea>
+    </div>
+
+    <div class="exercise__examples" role="group" aria-label="Ejemplos">
+      <span class="exercise__hint">Ejemplos:</span>
+      @for (example of examples; track example.id) {
+        <button
+          class="exercise__example"
+          type="button"
+          [attr.data-example]="example.id"
+          (click)="useExample(example.text)"
+        >
+          {{ example.label }}
+        </button>
+      }
+    </div>
+
+    @let parsedMatrix = parsed();
+    @if (!parsedMatrix.valid) {
+      <p class="pen-note" role="alert">{{ parsedMatrix.message }}</p>
+    }
+    @if (errorMessage(); as message) {
+      <p class="pen-note" role="alert">{{ message }}</p>
+    }
+
+    <button class="pen-button" type="submit" [disabled]="!parsedMatrix.valid || loading()">
+      {{ loading() ? 'Calculando…' : 'Factorizar' }}
+    </button>
+  </form>
+
+  @if (calculation(); as current) {
+    <section class="solution" aria-label="Resultado">
+      <div class="equation">
+        <app-matrix-view class="equation__term" name="A" [rows]="current.input" />
+        <span class="equation__operator" aria-hidden="true">=</span>
+        <app-matrix-view class="equation__term" name="Q" [rows]="current.result.q" />
+        <span class="equation__operator" aria-hidden="true">·</span>
+        <app-matrix-view class="equation__term" name="R" [rows]="current.result.r" />
+      </div>
+
+      @if (reconstruction(); as check) {
+        @if (check.rebuilds) {
+          <p class="solution__check solution__check--valid">
+            ✓ Q · R reconstruye A. Error máximo: {{ check.error }}
+          </p>
+        } @else {
+          <p class="solution__check pen-note" role="alert">
+            ✗ Q · R no reconstruye A. Error máximo: {{ check.error }}
+          </p>
+        }
+      }
+
+      <app-statistics-panel class="solution__statistics" [statistics]="current.result.statistics" />
+    </section>
+  }
+</main>

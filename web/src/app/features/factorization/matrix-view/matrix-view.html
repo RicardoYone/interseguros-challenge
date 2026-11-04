@@ -1,0 +1,29 @@
+<figure class="matrix">
+  <figcaption class="matrix__label">
+    <em class="matrix__name">{{ name() }}</em>
+    <span class="matrix__size">{{ rowCount() }}×{{ columnCount() }}</span>
+  </figcaption>
+
+  <div class="matrix__scroll">
+    <table class="matrix__table">
+      <caption class="visually-hidden">
+        Matriz {{ name() }} de {{ rowCount() }} filas por {{ columnCount() }} columnas
+      </caption>
+      <tbody>
+        @for (row of displayedRows(); track $index) {
+          <tr>
+            @for (cell of row; track $index) {
+              <td [title]="cell.exact">{{ cell.text }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (isTruncated()) {
+    <p class="matrix__note">
+      Se muestran {{ maxDisplayed }} filas y {{ maxDisplayed }} columnas. Las estadísticas usan todos los valores.
+    </p>
+  }
+</figure>

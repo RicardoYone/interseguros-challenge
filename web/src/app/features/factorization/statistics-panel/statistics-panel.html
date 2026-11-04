@@ -1,0 +1,16 @@
+<section class="notes" aria-labelledby="statistics-title">
+  <h2 id="statistics-title" class="notes__title">Estadísticas de <em>Q</em> y <em>R</em></h2>
+
+  <dl class="notes__list">
+    @for (entry of entries(); track entry.label) {
+      <div class="notes__entry">
+        <dt>{{ entry.label }}</dt>
+        <dd [title]="entry.exact">{{ entry.text }}</dd>
+      </div>
+    }
+    <div class="notes__entry">
+      <dt>¿Alguna matriz diagonal?</dt>
+      <dd>{{ diagonalAnswer() }}</dd>
+    </div>
+  </dl>
+</section>

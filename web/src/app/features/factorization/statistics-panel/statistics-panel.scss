@@ -1,0 +1,42 @@
+.notes {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 30rem;
+}
+
+.notes__title {
+  font-size: var(--text-lg);
+  font-weight: 400;
+}
+
+.notes__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+// A dotted leader joins each label with its value, like an index in a book.
+.notes__entry {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+
+  &::before {
+    flex: 1;
+    order: 1;
+    border-bottom: 1px dotted var(--color-ink-soft);
+    content: '';
+  }
+
+  dt {
+    order: 0;
+    font-style: italic;
+  }
+
+  dd {
+    order: 2;
+    margin: 0;
+    font-family: var(--font-numbers);
+    font-size: var(--text-sm);
+  }
+}

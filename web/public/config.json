@@ -1,0 +1,4 @@
+{
+  "statisticsApiUrl": "http://localhost:3000",
+  "qrApiUrl": "http://localhost:8080"
+}

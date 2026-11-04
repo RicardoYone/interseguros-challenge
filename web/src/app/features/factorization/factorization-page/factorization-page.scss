@@ -1,0 +1,186 @@
+:host {
+  display: block;
+  max-width: var(--content-width);
+  padding: var(--space-6) var(--space-5) var(--space-7) calc(var(--margin-offset) + var(--space-5));
+}
+
+.masthead {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.masthead__eyebrow {
+  color: var(--color-ink-soft);
+  font-family: var(--font-numbers);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.masthead__title {
+  font-size: var(--text-xl);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.masthead__logout {
+  padding: var(--space-1) 0;
+  border: 0;
+  border-bottom: 1px solid currentcolor;
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  font-style: italic;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-pen);
+  }
+}
+
+.sheet {
+  display: grid;
+  gap: var(--space-7);
+  margin-top: var(--space-6);
+}
+
+.exercise {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  max-width: 34rem;
+}
+
+.exercise__label {
+  font-size: var(--text-lg);
+}
+
+.exercise__hint {
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+}
+
+.exercise__brackets {
+  position: relative;
+  width: 100%;
+  padding-inline: var(--space-3);
+
+  &::before,
+  &::after {
+    position: absolute;
+    top: 0;
+    bottom: var(--space-1);
+    width: var(--space-2);
+    border: 2px solid var(--color-ink);
+    content: '';
+  }
+
+  &::before {
+    left: 0;
+    border-right: 0;
+  }
+
+  &::after {
+    right: 0;
+    border-left: 0;
+  }
+}
+
+.exercise__input {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  border: 0;
+  font-family: var(--font-numbers);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  background: transparent;
+  resize: vertical;
+}
+
+.exercise__examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: baseline;
+}
+
+.exercise__example {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted currentcolor;
+  font-size: var(--text-sm);
+  font-style: italic;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-pen);
+  }
+}
+
+.solution {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.equation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-5);
+  align-items: center;
+  overflow-x: auto;
+}
+
+// One well-timed reveal: the equation is written from left to right.
+.equation__term,
+.equation__operator,
+.solution__check,
+.solution__statistics {
+  animation: write-in var(--motion) both;
+}
+
+.equation > :nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.equation > :nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.equation > :nth-child(4) {
+  animation-delay: 240ms;
+}
+
+.equation > :nth-child(5) {
+  animation-delay: 320ms;
+}
+
+.solution__check {
+  animation-delay: 420ms;
+}
+
+.solution__statistics {
+  animation-delay: 500ms;
+}
+
+.equation__operator {
+  font-size: var(--text-lg);
+}
+
+.solution__check {
+  font-style: italic;
+}
+
+.solution__check--valid {
+  color: var(--color-valid);
+}
+
+@keyframes write-in {
+  from {
+    opacity: 0;
+    transform: translateX(-0.5rem);
+  }
+}
