@@ -1,0 +1,26 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Angular
+.angular/
+
+# Go
+*.exe
+*.test
+*.out
+testdata/fuzz/**/cache/
+
+# Tooling
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
