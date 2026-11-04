@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -71,6 +72,18 @@ func newRequestLogger(logger *slog.Logger) fiber.Handler {
 		)
 
 		return nil
+	}
+}
+
+// newPanicLogger records where a panic happened: the error it becomes only keeps its
+// message, which would not locate a failure in the numeric code.
+func newPanicLogger(logger *slog.Logger) func(fiber.Ctx, any) {
+	return func(c fiber.Ctx, recovered any) {
+		logger.LogAttrs(c.Context(), slog.LevelError, "request panicked",
+			slog.String("request_id", requestctx.RequestID(c.Context())),
+			slog.Any("panic", recovered),
+			slog.String("stack", string(debug.Stack())),
+		)
 	}
 }
 

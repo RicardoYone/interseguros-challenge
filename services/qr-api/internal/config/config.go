@@ -82,8 +82,8 @@ func Load(lookup func(string) string) (Config, error) {
 
 	if origins := require("CORS_ALLOWED_ORIGINS"); origins != "" {
 		cfg.CORSAllowedOrigins = splitList(origins)
-		if slices.Contains(cfg.CORSAllowedOrigins, "*") {
-			problems = append(problems, errors.New("CORS_ALLOWED_ORIGINS must not contain a wildcard"))
+		if slices.ContainsFunc(cfg.CORSAllowedOrigins, isNotOrigin) {
+			problems = append(problems, errors.New("CORS_ALLOWED_ORIGINS must list http or https origins, without wildcards"))
 		}
 	}
 
@@ -100,6 +100,19 @@ func Load(lookup func(string) string) (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// isNotOrigin rejects anything other than a scheme and a host, such as an empty item
+// left by a trailing comma, a wildcard, or a URL with a path.
+func isNotOrigin(value string) bool {
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return true
+	}
+
+	isHTTP := parsed.Scheme == "http" || parsed.Scheme == "https"
+
+	return !isHTTP || parsed.Host == "" || parsed.Path != "" || parsed.RawQuery != ""
 }
 
 func splitList(value string) []string {

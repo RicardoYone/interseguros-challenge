@@ -53,7 +53,10 @@ func NewApp(options Options) *fiber.App {
 	app.Use(
 		assignRequestID,
 		newRequestLogger(options.Logger),
-		recoverer.New(),
+		recoverer.New(recoverer.Config{
+			EnableStackTrace:  true,
+			StackTraceHandler: newPanicLogger(options.Logger),
+		}),
 		helmet.New(),
 		cors.New(cors.Config{
 			AllowOrigins:  options.CORSAllowedOrigins,

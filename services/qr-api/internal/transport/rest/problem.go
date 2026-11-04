@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 
 	"github.com/RicardoYone/interseguros-challenge/services/qr-api/internal/factorization"
+	"github.com/RicardoYone/interseguros-challenge/services/qr-api/internal/requestctx"
 )
 
 const (
@@ -33,6 +34,7 @@ var knownErrors = []struct {
 	{errUnauthorized, http.StatusUnauthorized, "A valid access token is required."},
 	{factorization.ErrAccessDenied, http.StatusUnauthorized, "A valid access token is required."},
 	{errMalformedBody, http.StatusBadRequest, "The request body is not valid JSON."},
+	{errCompressedBody, http.StatusUnsupportedMediaType, "Compressed request bodies are not accepted."},
 	{errInvalidBody, http.StatusUnprocessableEntity, "The matrix must be an array of arrays of numbers."},
 	{factorization.ErrEmptyMatrix, http.StatusUnprocessableEntity, "The matrix has no values."},
 	{factorization.ErrJaggedMatrix, http.StatusUnprocessableEntity, "All rows of the matrix must have the same length."},
@@ -50,7 +52,10 @@ func newErrorHandler(logger *slog.Logger) fiber.ErrorHandler {
 
 		// The cause stays in the logs: the client only sees the fixed message above.
 		if status >= fiber.StatusInternalServerError {
-			logger.LogAttrs(c.Context(), slog.LevelError, "request failed", slog.Any("error", err))
+			logger.LogAttrs(c.Context(), slog.LevelError, "request failed",
+				slog.String("request_id", requestctx.RequestID(c.Context())),
+				slog.Any("error", err),
+			)
 		}
 		if status == fiber.StatusUnauthorized {
 			c.Set(fiber.HeaderWWWAuthenticate, "Bearer")

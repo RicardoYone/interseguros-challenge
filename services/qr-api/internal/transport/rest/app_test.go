@@ -3,6 +3,7 @@ package rest_test
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -243,6 +244,9 @@ func TestCreateFactorization_invalidInput(t *testing.T) {
 		{name: "empty row", body: `{"matrix":[[]]}`, status: http.StatusUnprocessableEntity},
 		{name: "rows of different lengths", body: `{"matrix":[[1,2],[3]]}`, status: http.StatusUnprocessableEntity},
 		{name: "value that is not a number", body: `{"matrix":[["1"]]}`, status: http.StatusUnprocessableEntity},
+		{name: "null value, which JSON would decode as zero", body: `{"matrix":[[1,null],[3,4]]}`, status: http.StatusUnprocessableEntity},
+		{name: "null row", body: `{"matrix":[[1,2],null]}`, status: http.StatusUnprocessableEntity},
+		{name: "null matrix", body: `{"matrix":null}`, status: http.StatusUnprocessableEntity},
 		{name: "matrix that is not an array", body: `{"matrix":"text"}`, status: http.StatusUnprocessableEntity},
 		{name: "value out of range", body: `{"matrix":[[1e999]]}`, status: http.StatusUnprocessableEntity},
 		{name: "matrix over the maximum dimension", body: tooManyColumns, status: http.StatusUnprocessableEntity},
@@ -260,6 +264,25 @@ func TestCreateFactorization_invalidInput(t *testing.T) {
 			assert.Zero(t, api.calls.Load(), "invalid input must not reach the statistics API")
 		})
 	}
+
+	t.Run("rejects a compressed body instead of inflating it", func(t *testing.T) {
+		t.Parallel()
+
+		app, api := newHealthyApp(t)
+		var compressed bytes.Buffer
+		writer := gzip.NewWriter(&compressed)
+		_, err := writer.Write([]byte(validMatrixBody))
+		require.NoError(t, err)
+		require.NoError(t, writer.Close())
+
+		request := factorizeRequest(compressed.String())
+		request.Header.Set("Content-Encoding", "gzip")
+
+		response, body := send(t, app, request)
+
+		assertProblem(t, response, body, http.StatusUnsupportedMediaType)
+		assert.Zero(t, api.calls.Load())
+	})
 
 	// Uses a real connection because the server enforces this limit while reading it, a
 	// step that app.Test skips. Only the headers are sent: the server answers and closes
@@ -398,6 +421,57 @@ func TestUnexpectedFailures_hideTheirCause(t *testing.T) {
 
 			assertProblem(t, response, body, http.StatusInternalServerError)
 			assert.NotContains(t, string(body), "hunter2")
+		})
+	}
+}
+
+func TestUnexpectedFailures_areTraceableInTheLogs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		factorizer factorizerFunc
+		wantInLogs string
+	}{
+		{
+			name: "an unexpected error logs its cause with the request id",
+			factorizer: func(context.Context, [][]float64) (factorization.Result, error) {
+				return factorization.Result{}, errors.New("the real cause")
+			},
+			wantInLogs: "the real cause",
+		},
+		{
+			name: "a panic logs where it happened with the request id",
+			factorizer: func(context.Context, [][]float64) (factorization.Result, error) {
+				panic("the real cause")
+			},
+			wantInLogs: "app_test.go",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var output bytes.Buffer
+			app := rest.NewApp(rest.Options{
+				Logger:             slog.New(slog.NewJSONHandler(&output, nil)),
+				CORSAllowedOrigins: []string{allowedOrigin},
+				TokenVerifier:      fixedVerifier{},
+				Factorizer:         tt.factorizer,
+			})
+			request := factorizeRequest(validMatrixBody)
+			request.Header.Set("X-Request-ID", "trace-9")
+
+			send(t, app, request)
+
+			failureLogged := false
+			for line := range strings.Lines(output.String()) {
+				if strings.Contains(line, tt.wantInLogs) {
+					failureLogged = true
+					assert.Contains(t, line, `"request_id":"trace-9"`)
+				}
+			}
+			assert.True(t, failureLogged, "the logs must contain %q:\n%s", tt.wantInLogs, output.String())
 		})
 	}
 }

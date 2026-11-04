@@ -101,6 +101,9 @@ func TestLoad(t *testing.T) {
 		value    string
 	}{
 		{name: "a wildcard origin", variable: "CORS_ALLOWED_ORIGINS", value: "*"},
+		{name: "an empty origin from a trailing comma", variable: "CORS_ALLOWED_ORIGINS", value: "https://a.example,"},
+		{name: "an origin without a scheme", variable: "CORS_ALLOWED_ORIGINS", value: "a.example"},
+		{name: "an origin with a path", variable: "CORS_ALLOWED_ORIGINS", value: "https://a.example/app"},
 		{name: "a key that is not base64", variable: "JWT_PUBLIC_KEY_B64", value: "%%%"},
 		{name: "a timeout that is not a duration", variable: "STATISTICS_TIMEOUT", value: "soon"},
 		{name: "a negative timeout", variable: "STATISTICS_TIMEOUT", value: "-1s"},

@@ -20,8 +20,9 @@ import (
 	"github.com/RicardoYone/interseguros-challenge/services/qr-api/internal/transport/rest"
 )
 
-// shutdownTimeout bounds how long in-flight requests have to finish.
-const shutdownTimeout = 10 * time.Second
+// shutdownMargin is added to the statistics timeout to get the shutdown deadline, so
+// that a request waiting on the statistics API can still finish during a deploy.
+const shutdownMargin = 5 * time.Second
 
 func main() {
 	if err := run(); err != nil {
@@ -75,7 +76,7 @@ func run() error {
 	}
 
 	logger.Info("shutting down")
-	if err := app.ShutdownWithTimeout(shutdownTimeout); err != nil {
+	if err := app.ShutdownWithTimeout(cfg.StatisticsTimeout + shutdownMargin); err != nil {
 		return fmt.Errorf("shutting down: %w", err)
 	}
 

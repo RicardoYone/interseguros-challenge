@@ -59,10 +59,12 @@ Ambas APIs responden con un único formato, RFC 9457 (`application/problem+json`
 | JSON mal formado | 400 |
 | Sin token, token inválido o credenciales incorrectas | 401 |
 | Cuerpo mayor al tamaño permitido | 413 |
+| Cuerpo comprimido: ninguna API lo descomprime, para no exponer esa superficie | 415 |
 | Matriz vacía, filas desiguales, excede el tamaño máximo o desborde numérico | 422 |
 | Demasiados intentos de inicio de sesión | 429 |
 | Node responde con error o no se puede alcanzar | 502 |
 | Node no responde a tiempo | 504 |
+| Fallo inesperado | 500 |
 
 ## Capas (hexagonal)
 
@@ -88,7 +90,7 @@ flowchart LR
 |---|---|
 | Seguridad | JWT ES256 con algoritmo fijo y validación de `iss`, `aud` y `exp`; lista de orígenes CORS; límites de tamaño de cuerpo y dimensiones; límite de intentos de login; contenedores sin root; secretos fuera del repositorio |
 | Rendimiento | QR en O(mn²) con memoria contigua; estadísticas en una sola pasada O(N) |
-| Resiliencia | Timeout configurable de Go a Node, 30 s por defecto, sin reintentos; apagado ordenado en ambas APIs |
+| Resiliencia | Timeout configurable de Go a Node, 30 s por defecto, sin reintentos; apagado ordenado en ambas APIs, y en Go con un plazo mayor que ese timeout |
 | Observabilidad | Logs JSON (`slog`, `pino`) y `X-Request-ID` propagado de Go a Node |
 | Hora | Hora local del servidor con `TZ=America/Lima` en cada despliegue; el `exp` del JWT es numérico por estándar |
 

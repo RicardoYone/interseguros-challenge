@@ -11,12 +11,15 @@ import (
 )
 
 var (
-	errMalformedBody = errors.New("request body is not valid JSON")
-	errInvalidBody   = errors.New("request body has an invalid shape")
+	errMalformedBody  = errors.New("request body is not valid JSON")
+	errInvalidBody    = errors.New("request body has an invalid shape")
+	errCompressedBody = errors.New("request body is compressed")
 )
 
+// createFactorizationRequest holds pointers because encoding/json silently turns a
+// null into 0 for a plain float64, which would factorize a value nobody sent.
 type createFactorizationRequest struct {
-	Matrix [][]float64 `json:"matrix"`
+	Matrix [][]*float64 `json:"matrix"`
 }
 
 type classificationResponse struct {
@@ -41,12 +44,18 @@ type createFactorizationResponse struct {
 
 func newCreateFactorizationHandler(factorizer Factorizer) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		request, err := decodeRequest(c.Body())
+		// Clients have no reason to compress a matrix, and refusing it leaves no
+		// decompression to attack. The raw body is read for the same reason.
+		if c.Get(fiber.HeaderContentEncoding) != "" {
+			return errCompressedBody
+		}
+
+		rows, err := decodeRows(c.BodyRaw())
 		if err != nil {
 			return err
 		}
 
-		result, err := factorizer.Factorize(c.Context(), request.Matrix)
+		result, err := factorizer.Factorize(c.Context(), rows)
 		if err != nil {
 			return fmt.Errorf("factorizing matrix: %w", err)
 		}
@@ -55,20 +64,30 @@ func newCreateFactorizationHandler(factorizer Factorizer) fiber.Handler {
 	}
 }
 
-func decodeRequest(body []byte) (createFactorizationRequest, error) {
+func decodeRows(body []byte) ([][]float64, error) {
 	var request createFactorizationRequest
 
-	err := json.Unmarshal(body, &request)
-	if err == nil {
-		return request, nil
+	if err := json.Unmarshal(body, &request); err != nil {
+		var typeError *json.UnmarshalTypeError
+		if errors.As(err, &typeError) {
+			return nil, fmt.Errorf("%w: %w", errInvalidBody, err)
+		}
+
+		return nil, fmt.Errorf("%w: %w", errMalformedBody, err)
 	}
 
-	var typeError *json.UnmarshalTypeError
-	if errors.As(err, &typeError) {
-		return request, fmt.Errorf("%w: %w", errInvalidBody, err)
+	rows := make([][]float64, len(request.Matrix))
+	for i, row := range request.Matrix {
+		rows[i] = make([]float64, len(row))
+		for j, value := range row {
+			if value == nil {
+				return nil, fmt.Errorf("%w: null value at row %d, column %d", errInvalidBody, i, j)
+			}
+			rows[i][j] = *value
+		}
 	}
 
-	return request, fmt.Errorf("%w: %w", errMalformedBody, err)
+	return rows, nil
 }
 
 func toResponse(result factorization.Result) createFactorizationResponse {
