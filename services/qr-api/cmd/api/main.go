@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -55,15 +56,21 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	listenFailed := make(chan error, 1)
-	go func() {
-		listenFailed <- app.Listen(":"+cfg.Port, fiber.ListenConfig{DisableStartupMessage: true})
-	}()
+	// Binding here, before logging, so that a busy port fails instead of claiming to listen.
+	listener, err := net.Listen("tcp", ":"+cfg.Port)
+	if err != nil {
+		return fmt.Errorf("binding port: %w", err)
+	}
 	logger.Info("server listening", slog.String("port", cfg.Port))
 
+	serveFailed := make(chan error, 1)
+	go func() {
+		serveFailed <- app.Listener(listener, fiber.ListenConfig{DisableStartupMessage: true})
+	}()
+
 	select {
-	case err := <-listenFailed:
-		return fmt.Errorf("listening: %w", err)
+	case err := <-serveFailed:
+		return fmt.Errorf("serving: %w", err)
 	case <-ctx.Done():
 	}
 

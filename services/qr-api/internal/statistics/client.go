@@ -88,6 +88,9 @@ func (c *Client) Calculate(
 		// This service only sends valid matrices, so the API can only reject their
 		// statistics for not being representable.
 		return factorization.Statistics{}, factorization.ErrNumericOverflow
+	case http.StatusUnauthorized:
+		// The token can expire between this service's verification and the API's.
+		return factorization.Statistics{}, factorization.ErrAccessDenied
 	default:
 		return factorization.Statistics{}, fmt.Errorf(
 			"%w: unexpected status %d",

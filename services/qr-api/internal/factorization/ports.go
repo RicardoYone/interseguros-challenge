@@ -9,6 +9,7 @@ import (
 var (
 	ErrStatisticsUnavailable = errors.New("statistics are unavailable")
 	ErrStatisticsTimeout     = errors.New("statistics took too long")
+	ErrAccessDenied          = errors.New("statistics rejected the caller's identity")
 )
 
 // NamedMatrix labels a matrix within a statistics calculation.
@@ -37,6 +38,6 @@ type Statistics struct {
 // what it needs, and an adapter decides how to obtain it.
 type StatisticsCalculator interface {
 	// Calculate returns the statistics of matrices. It fails with
-	// ErrStatisticsUnavailable, ErrStatisticsTimeout or ErrNumericOverflow.
+	// ErrStatisticsUnavailable, ErrStatisticsTimeout, ErrAccessDenied or ErrNumericOverflow.
 	Calculate(ctx context.Context, matrices []NamedMatrix) (Statistics, error)
 }

@@ -91,21 +91,15 @@ func newRequireAuth(verifier TokenVerifier) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		token, found := strings.CutPrefix(c.Get(fiber.HeaderAuthorization), bearerPrefix)
 		if !found {
-			return rejectUnauthorized(c)
+			return errUnauthorized
 		}
 
 		if _, err := verifier.Verify(token); err != nil {
-			return rejectUnauthorized(c)
+			return errUnauthorized
 		}
 
 		c.SetContext(requestctx.WithBearerToken(c.Context(), strings.Clone(token)))
 
 		return c.Next()
 	}
-}
-
-func rejectUnauthorized(c fiber.Ctx) error {
-	c.Set(fiber.HeaderWWWAuthenticate, "Bearer")
-
-	return errUnauthorized
 }

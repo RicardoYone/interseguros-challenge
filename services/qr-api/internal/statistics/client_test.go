@@ -41,15 +41,23 @@ func TestClient_Calculate(t *testing.T) {
 	t.Run("sends the contract the statistics API expects", func(t *testing.T) {
 		t.Parallel()
 
-		var method, path, authorization, requestID, contentType string
-		var body map[string]any
+		// The handler runs on another goroutine: the channel hands its observations over safely.
+		type observedRequest struct {
+			method, path, authorization, requestID, contentType string
+			body                                                map[string]any
+		}
+		observed := make(chan observedRequest, 1)
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			method, path = r.Method, r.URL.Path
-			authorization = r.Header.Get("Authorization")
-			requestID = r.Header.Get("X-Request-ID")
-			contentType = r.Header.Get("Content-Type")
+			request := observedRequest{
+				method:        r.Method,
+				path:          r.URL.Path,
+				authorization: r.Header.Get("Authorization"),
+				requestID:     r.Header.Get("X-Request-ID"),
+				contentType:   r.Header.Get("Content-Type"),
+			}
 			raw, _ := io.ReadAll(r.Body)
-			_ = json.Unmarshal(raw, &body)
+			_ = json.Unmarshal(raw, &request.body)
+			observed <- request
 			_, _ = io.WriteString(w, validResponse)
 		}))
 		defer server.Close()
@@ -59,17 +67,18 @@ func TestClient_Calculate(t *testing.T) {
 		_, err := client.Calculate(ctx, namedMatrices(t))
 
 		require.NoError(t, err)
-		assert.Equal(t, http.MethodPost, method)
-		assert.Equal(t, "/api/v1/statistics", path)
-		assert.Equal(t, "Bearer user-token", authorization)
-		assert.Equal(t, "request-1", requestID)
-		assert.Equal(t, "application/json", contentType)
+		request := <-observed
+		assert.Equal(t, http.MethodPost, request.method)
+		assert.Equal(t, "/api/v1/statistics", request.path)
+		assert.Equal(t, "Bearer user-token", request.authorization)
+		assert.Equal(t, "request-1", request.requestID)
+		assert.Equal(t, "application/json", request.contentType)
 		assert.Equal(t, map[string]any{
 			"matrices": []any{
 				map[string]any{"name": "Q", "values": []any{[]any{1.0, 0.0}, []any{0.0, 1.0}}},
 				map[string]any{"name": "R", "values": []any{[]any{2.0, 3.0}}},
 			},
-		}, body)
+		}, request.body)
 	})
 
 	t.Run("maps the response to the domain", func(t *testing.T) {
@@ -104,7 +113,7 @@ func TestClient_Calculate(t *testing.T) {
 		want   error
 	}{
 		{name: "server error", status: http.StatusInternalServerError, body: `{}`, want: factorization.ErrStatisticsUnavailable},
-		{name: "rejected token", status: http.StatusUnauthorized, body: `{}`, want: factorization.ErrStatisticsUnavailable},
+		{name: "rejected token", status: http.StatusUnauthorized, body: `{}`, want: factorization.ErrAccessDenied},
 		{name: "overflow reported by the API", status: http.StatusUnprocessableEntity, body: `{}`, want: factorization.ErrNumericOverflow},
 		{name: "malformed response", status: http.StatusOK, body: `not json`, want: factorization.ErrStatisticsUnavailable},
 		{name: "response missing its statistics", status: http.StatusOK, body: `{"max": 4}`, want: factorization.ErrStatisticsUnavailable},

@@ -312,6 +312,18 @@ func TestCreateFactorization_statisticsFailures(t *testing.T) {
 		})
 	}
 
+	t.Run("responds 401 when the API rejects a token that just expired", func(t *testing.T) {
+		t.Parallel()
+
+		api := newStatisticsAPI(t, http.StatusUnauthorized, `{}`)
+		app := newApp(api.URL, testClientTimeout, slog.New(slog.DiscardHandler))
+
+		response, body := send(t, app, factorizeRequest(validMatrixBody))
+
+		assertProblem(t, response, body, http.StatusUnauthorized)
+		assert.Equal(t, "Bearer", response.Header.Get("WWW-Authenticate"))
+	})
+
 	t.Run("responds 502 when the API is unreachable", func(t *testing.T) {
 		t.Parallel()
 

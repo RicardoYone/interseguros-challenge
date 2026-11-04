@@ -31,6 +31,7 @@ var knownErrors = []struct {
 	detail string
 }{
 	{errUnauthorized, http.StatusUnauthorized, "A valid access token is required."},
+	{factorization.ErrAccessDenied, http.StatusUnauthorized, "A valid access token is required."},
 	{errMalformedBody, http.StatusBadRequest, "The request body is not valid JSON."},
 	{errInvalidBody, http.StatusUnprocessableEntity, "The matrix must be an array of arrays of numbers."},
 	{factorization.ErrEmptyMatrix, http.StatusUnprocessableEntity, "The matrix has no values."},
@@ -50,6 +51,9 @@ func newErrorHandler(logger *slog.Logger) fiber.ErrorHandler {
 		// The cause stays in the logs: the client only sees the fixed message above.
 		if status >= fiber.StatusInternalServerError {
 			logger.LogAttrs(c.Context(), slog.LevelError, "request failed", slog.Any("error", err))
+		}
+		if status == fiber.StatusUnauthorized {
+			c.Set(fiber.HeaderWWWAuthenticate, "Bearer")
 		}
 
 		return c.Status(status).JSON(problem{
