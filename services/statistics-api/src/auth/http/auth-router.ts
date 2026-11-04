@@ -46,6 +46,8 @@ export function createAuthRouter({ loginService, loginRateLimit }: AuthRouterOpt
 
       try {
         const { token, expiresInSeconds } = await loginService.login(credentials);
+        // RFC 6749: a response carrying a token must not be stored by any cache.
+        response.setHeader('Cache-Control', 'no-store');
         response.json({ accessToken: token, expiresIn: expiresInSeconds });
       } catch (error) {
         if (error instanceof InvalidCredentialsError) {

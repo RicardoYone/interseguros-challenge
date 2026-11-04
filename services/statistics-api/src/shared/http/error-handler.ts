@@ -37,15 +37,20 @@ export function notFoundHandler(_request: Request, _response: Response, next: Ne
 }
 
 /**
- * Translates every failure into a single problem document format.
- * Express identifies error middleware by its four parameters, so `_next` must stay.
+ * Translates every failure into a single problem document format. A response that
+ * already started cannot change anymore, so it is left to Express, which closes it.
  */
 export function errorHandler(
   error: unknown,
   request: Request,
   response: Response,
-  _next: NextFunction,
+  next: NextFunction,
 ): void {
+  if (response.headersSent) {
+    next(error);
+    return;
+  }
+
   const problem = toProblem(error);
 
   if (problem.status >= 500) {

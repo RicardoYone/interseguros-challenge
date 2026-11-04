@@ -68,6 +68,8 @@ describe('calculateStatistics', () => {
     ['a value in a tall extra row', [[1, 0], [0, 2], [3, 0]], false],
     ['floating point noise below tolerance', [[1, 1e-12], [-1e-12, 1]], true],
     ['a value above tolerance', [[1, 1e-9], [0, 1]], false],
+    ['noise that grows with a large scale', [[5e8, 3e-8], [0, 5e8]], true],
+    ['a dense matrix of tiny values', [[1e-11, 1e-11], [1e-11, 1e-11]], false],
   ])('classifies %s', (_description, values, expected) => {
     const result = calculateStatistics([{ name: 'A', values }]);
 

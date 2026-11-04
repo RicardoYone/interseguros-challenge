@@ -15,6 +15,7 @@ describe('POST /api/v1/auth/token', () => {
 
     expect(login.status).toBe(200);
     expect(login.body.expiresIn).toBe(TEST_TTL_SECONDS);
+    expect(login.headers['cache-control']).toBe('no-store');
 
     const statistics = await request(app)
       .post('/api/v1/statistics')

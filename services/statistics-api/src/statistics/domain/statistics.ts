@@ -19,11 +19,12 @@ export interface MatrixStatistics {
 }
 
 /**
- * Largest magnitude still treated as zero when classifying a matrix as diagonal.
- * Matrices produced by floating point algorithms such as QR carry rounding noise,
- * so an exact comparison with zero would misclassify them.
+ * Fraction of a matrix's largest value still treated as zero when classifying it as
+ * diagonal. Matrices produced by floating point algorithms such as QR carry rounding
+ * noise, and that noise grows with their scale, so neither an exact comparison with
+ * zero nor a fixed threshold would classify them correctly.
  */
-const DIAGONAL_TOLERANCE = 1e-10;
+const RELATIVE_DIAGONAL_TOLERANCE = 1e-10;
 
 /** The statistics cannot be represented as finite numbers, which JSON requires. */
 export class NonFiniteStatisticsError extends Error {
@@ -81,9 +82,15 @@ export function calculateStatistics(matrices: readonly NamedMatrix[]): MatrixSta
 
 /** A rectangular matrix is diagonal when every value outside its main diagonal is zero. */
 function isDiagonal(values: NamedMatrix['values']): boolean {
+  let largest = 0;
+  for (const row of values) {
+    for (const value of row) {
+      largest = Math.max(largest, Math.abs(value));
+    }
+  }
+  const tolerance = RELATIVE_DIAGONAL_TOLERANCE * largest;
+
   return values.every((row, rowIndex) =>
-    row.every(
-      (value, columnIndex) => rowIndex === columnIndex || Math.abs(value) <= DIAGONAL_TOLERANCE,
-    ),
+    row.every((value, columnIndex) => rowIndex === columnIndex || Math.abs(value) <= tolerance),
   );
 }
