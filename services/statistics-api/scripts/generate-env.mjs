@@ -2,7 +2,7 @@
 // Usage: npm run generate-env [-- --force]
 // The password comes from DEMO_PASSWORD, or is generated and printed once.
 import { randomBytes } from 'node:crypto';
-import { existsSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { createEnvironment } from './environment.mjs';
@@ -24,6 +24,8 @@ const content = Object.entries(environment)
   .join('\n');
 
 writeFileSync(OUTPUT_PATH, `${content}\n`, { mode: 0o600 });
+// The mode above only applies to a new file: --force could keep wider permissions.
+chmodSync(OUTPUT_PATH, 0o600);
 
 console.log(`Wrote ${OUTPUT_PATH}`);
 console.log(`Demo user: ${environment.DEMO_USERNAME}`);

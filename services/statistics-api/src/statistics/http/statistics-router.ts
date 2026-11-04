@@ -4,11 +4,15 @@ import { ProblemError } from '../../shared/http/problem.js';
 import { parseBody } from '../../shared/http/validation.js';
 import { calculateStatistics, NonFiniteStatisticsError } from '../domain/statistics.js';
 
+/** Same limit as the QR API, whose results this endpoint receives. */
+const MAX_MATRIX_DIMENSION = 200;
+
 const matrixSchema = z.object({
   name: z.string().min(1).max(64),
   values: z
-    .array(z.array(z.number()).min(1))
+    .array(z.array(z.number()).min(1).max(MAX_MATRIX_DIMENSION))
     .min(1)
+    .max(MAX_MATRIX_DIMENSION)
     .refine((rows) => rows.every((row) => row.length === rows[0]?.length), {
       error: 'all rows must have the same length',
     }),

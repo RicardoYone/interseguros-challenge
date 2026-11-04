@@ -41,6 +41,8 @@ paths:
                 $ref: '#/components/schemas/AccessToken'
         '400': { $ref: '#/components/responses/Problem' }
         '401': { $ref: '#/components/responses/Problem' }
+        '413': { $ref: '#/components/responses/Problem' }
+        '415': { $ref: '#/components/responses/Problem' }
         '422': { $ref: '#/components/responses/Problem' }
         '429': { $ref: '#/components/responses/Problem' }
         '500': { $ref: '#/components/responses/Problem' }

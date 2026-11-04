@@ -33,28 +33,41 @@ export class JoseTokenService implements TokenIssuer, TokenVerifier {
     this.#settings = settings;
   }
 
-  /** Imports the keys up front so that an invalid key stops the service at startup. */
+  /**
+   * Imports the keys and signs a trial token, so that an invalid or mismatched key stops
+   * the service at startup. Otherwise logins would succeed with tokens nobody accepts.
+   */
   static async create(options: JoseTokenServiceOptions): Promise<JoseTokenService> {
     const { privateKeyPem, publicKeyPem, issuer, audience, ttlSeconds } = options;
 
-    return new JoseTokenService({
+    const service = new JoseTokenService({
       privateKey: await importPKCS8(privateKeyPem, SIGNING_ALGORITHM),
       publicKey: await importSPKI(publicKeyPem, SIGNING_ALGORITHM),
       issuer,
       audience,
       ttlSeconds,
     });
+
+    try {
+      await service.verify((await service.issue('startup-check')).token);
+    } catch (error) {
+      throw new Error('the JWT private and public keys do not match', { cause: error });
+    }
+
+    return service;
   }
 
   async issue(subject: string): Promise<AccessToken> {
     const { privateKey, issuer, audience, ttlSeconds } = this.#settings;
+    // One timestamp for both claims: the lifetime stays exact across a second boundary.
+    const issuedAt = Math.floor(Date.now() / 1000);
     const token = await new SignJWT()
       .setProtectedHeader({ alg: SIGNING_ALGORITHM })
       .setIssuer(issuer)
       .setAudience(audience)
       .setSubject(subject)
-      .setIssuedAt()
-      .setExpirationTime(`${String(ttlSeconds)}s`)
+      .setIssuedAt(issuedAt)
+      .setExpirationTime(issuedAt + ttlSeconds)
       .sign(privateKey);
 
     return { token, expiresInSeconds: ttlSeconds };

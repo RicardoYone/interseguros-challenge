@@ -92,6 +92,32 @@ describe('POST /api/v1/statistics', () => {
     expect(response.body.errors.length).toBeGreaterThan(0);
   });
 
+  it('caps the reported errors, so that a small request cannot produce a huge response', async () => {
+    const values = [new Array<string>(5000).fill('x')];
+
+    const response = await postMatrices({ matrices: [{ name: 'A', values }] });
+
+    expect(response.status).toBe(422);
+    expect(response.body.errors.length).toBeLessThanOrEqual(20);
+  });
+
+  it.each([
+    ['too many rows', new Array<number[]>(201).fill([1])],
+    ['too many columns', [new Array<number>(201).fill(1)]],
+  ])('responds 422 to a matrix with %s', async (_description, values) => {
+    const response = await postMatrices({ matrices: [{ name: 'A', values }] });
+
+    expect(response.status).toBe(422);
+  });
+
+  it('accepts the largest matrix the QR API can produce', async () => {
+    const values = new Array<number[]>(200).fill(new Array<number>(200).fill(1));
+
+    const response = await postMatrices({ matrices: [{ name: 'A', values }] });
+
+    expect(response.status).toBe(200);
+  });
+
   it('responds 422 when a value overflows while parsing', async () => {
     const response = await request(app)
       .post(STATISTICS_PATH)

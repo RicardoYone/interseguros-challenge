@@ -37,6 +37,21 @@ describe('JoseTokenService', () => {
     });
   });
 
+  describe('create', () => {
+    it('refuses keys that do not belong together, so that the service stops at startup', async () => {
+      const mismatched = { ...keys, publicKeyPem: generateTestKeyPair().publicKeyPem };
+
+      await expect(
+        JoseTokenService.create({
+          ...mismatched,
+          issuer: TEST_ISSUER,
+          audience: TEST_AUDIENCE,
+          ttlSeconds: TEST_TTL_SECONDS,
+        }),
+      ).rejects.toThrow('do not match');
+    });
+  });
+
   describe('issue', () => {
     it('signs with ES256 and declares issuer, audience, subject and lifetime', async () => {
       const issued = await service.issue('demo');

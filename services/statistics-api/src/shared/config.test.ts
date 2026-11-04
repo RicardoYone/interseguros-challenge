@@ -3,13 +3,15 @@ import { ConfigurationError, loadConfig } from './config.js';
 
 const toBase64 = (value: string): string => Buffer.from(value).toString('base64');
 
+const BCRYPT_HASH = `$2b$12$${'a'.repeat(53)}`;
+
 const VALID_ENVIRONMENT = {
   JWT_PRIVATE_KEY_B64: toBase64('private-pem'),
   JWT_PUBLIC_KEY_B64: toBase64('public-pem'),
   JWT_ISSUER: 'issuer',
   JWT_AUDIENCE: 'audience',
   DEMO_USERNAME: 'demo',
-  DEMO_PASSWORD_HASH_B64: toBase64('$2b$hash'),
+  DEMO_PASSWORD_HASH_B64: toBase64(BCRYPT_HASH),
   CORS_ALLOWED_ORIGINS: 'https://a.example, https://b.example',
 };
 
@@ -19,7 +21,7 @@ describe('loadConfig', () => {
 
     expect(config.jwt.privateKeyPem).toBe('private-pem');
     expect(config.jwt.publicKeyPem).toBe('public-pem');
-    expect(config.demoUser.passwordHash).toBe('$2b$hash');
+    expect(config.demoUser.passwordHash).toBe(BCRYPT_HASH);
     expect(config.corsAllowedOrigins).toEqual(['https://a.example', 'https://b.example']);
   });
 
@@ -67,6 +69,22 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ ...VALID_ENVIRONMENT, CORS_ALLOWED_ORIGINS: origins })).toThrow(
       ConfigurationError,
     );
+  });
+
+  it.each([
+    ['a body limit without a size', 'BODY_LIMIT', 'abc'],
+    ['a body limit that would mean something else', 'BODY_LIMIT', '4 megabytes'],
+    ['a password hash that is not bcrypt', 'DEMO_PASSWORD_HASH_B64', toBase64('plain-text')],
+    ['a password hash that was not encoded', 'DEMO_PASSWORD_HASH_B64', BCRYPT_HASH],
+  ])('refuses %s and names the variable', (_description, variable, value) => {
+    const environment = { ...VALID_ENVIRONMENT, [variable]: value };
+
+    expect(() => loadConfig(environment)).toThrow(ConfigurationError);
+    expect(() => loadConfig(environment)).toThrow(variable);
+  });
+
+  it('accepts a body limit in kilobytes', () => {
+    expect(loadConfig({ ...VALID_ENVIRONMENT, BODY_LIMIT: '512kb' }).bodyLimit).toBe('512kb');
   });
 
   it('refuses a port out of range', () => {

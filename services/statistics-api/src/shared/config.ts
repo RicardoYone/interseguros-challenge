@@ -4,6 +4,12 @@ const decodeBase64 = (value: string): string => Buffer.from(value, 'base64').toS
 
 const base64Secret = z.string().min(1).transform(decodeBase64);
 
+/** bcryptjs answers false for a malformed hash, so every login would look like a wrong password. */
+const BCRYPT_HASH = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
+
+/** A malformed limit would mean something else entirely: "4 megabytes" parses as 4 bytes. */
+const BYTE_SIZE = /^\d+(kb|mb)$/i;
+
 /** True for a scheme and a host only, which rejects wildcards, empty items and URLs with a path. */
 function isOrigin(value: string): boolean {
   return URL.canParse(value) && new URL(value).origin === value;
@@ -22,7 +28,7 @@ const environmentSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   CORS_ALLOWED_ORIGINS: originList,
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
-  BODY_LIMIT: z.string().min(1).default('4mb'),
+  BODY_LIMIT: z.string().regex(BYTE_SIZE, { error: 'must look like 512kb or 4mb' }).default('4mb'),
   LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
   JWT_PRIVATE_KEY_B64: base64Secret,
   JWT_PUBLIC_KEY_B64: base64Secret,
@@ -30,7 +36,9 @@ const environmentSchema = z.object({
   JWT_AUDIENCE: z.string().min(1),
   JWT_TTL_SECONDS: z.coerce.number().int().min(1).default(900),
   DEMO_USERNAME: z.string().min(1),
-  DEMO_PASSWORD_HASH_B64: base64Secret,
+  DEMO_PASSWORD_HASH_B64: base64Secret.refine((hash) => BCRYPT_HASH.test(hash), {
+    error: 'must be a base64-encoded bcrypt hash',
+  }),
 });
 
 export interface Config {
