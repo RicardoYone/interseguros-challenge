@@ -40,7 +40,7 @@ export function createAuthRouter({ loginService, loginRateLimit }: AuthRouterOpt
         next(new ProblemError(429, 'Too many login attempts. Try again later.'));
       },
     }),
-    express.json({ limit: '1kb' }),
+    express.json({ limit: '1kb', inflate: false }),
     async (request, response) => {
       const credentials = parseBody(credentialsSchema, request.body);
 

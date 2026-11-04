@@ -53,6 +53,24 @@ describe('application', () => {
       expect(response.type).toBe('application/problem+json');
     });
 
+    it.each([
+      ['statistics', STATISTICS_PATH],
+      ['login', '/api/v1/auth/token'],
+    ])('rejects a compressed %s body instead of inflating it', async (_endpoint, path) => {
+      const { app, validToken } = await createTestApp();
+
+      const response = await request(app)
+        .post(path)
+        .set('Authorization', `Bearer ${validToken}`)
+        .set('Content-Type', 'application/json')
+        .set('Content-Encoding', 'gzip')
+        .send('{}');
+
+      expect(response.status).toBe(415);
+      expect(response.headers['content-type']).toBe('application/problem+json');
+      expect(response.body.detail).toBe('Compressed request bodies are not accepted.');
+    });
+
     it('hides the cause of an unexpected failure from the client', async () => {
       const { app } = await createTestApp({
         tokenVerifier: {

@@ -28,7 +28,7 @@ export function createStatisticsRouter({ requireAuth, bodyLimit }: StatisticsRou
 
   // The token is checked before the body is read, so that an anonymous client
   // cannot make the server parse large payloads.
-  router.post('/', requireAuth, express.json({ limit: bodyLimit }), (request, response) => {
+  router.post('/', requireAuth, express.json({ limit: bodyLimit, inflate: false }), (request, response) => {
     const { matrices } = parseBody(statisticsRequestSchema, request.body);
 
     try {

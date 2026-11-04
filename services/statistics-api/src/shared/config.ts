@@ -4,11 +4,18 @@ const decodeBase64 = (value: string): string => Buffer.from(value, 'base64').toS
 
 const base64Secret = z.string().min(1).transform(decodeBase64);
 
+/** True for a scheme and a host only, which rejects wildcards, empty items and URLs with a path. */
+function isOrigin(value: string): boolean {
+  return URL.canParse(value) && new URL(value).origin === value;
+}
+
 const originList = z
   .string()
   .min(1)
   .transform((value) => value.split(',').map((origin) => origin.trim()))
-  .refine((origins) => !origins.includes('*'), { error: 'wildcard origins are not allowed' });
+  .refine((origins) => origins.every(isOrigin), {
+    error: 'must list http or https origins, without wildcards',
+  });
 
 const environmentSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65_535).default(3000),

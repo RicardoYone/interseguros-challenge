@@ -58,8 +58,13 @@ describe('loadConfig', () => {
     expect(() => loadConfig(environment)).toThrow(variable);
   });
 
-  it('refuses a wildcard origin', () => {
-    expect(() => loadConfig({ ...VALID_ENVIRONMENT, CORS_ALLOWED_ORIGINS: '*' })).toThrow(
+  it.each([
+    ['a wildcard', '*'],
+    ['an empty origin from a trailing comma', 'https://a.example,'],
+    ['an origin without a scheme', 'a.example'],
+    ['an origin with a path', 'https://a.example/app'],
+  ])('refuses %s as an allowed origin', (_description, origins) => {
+    expect(() => loadConfig({ ...VALID_ENVIRONMENT, CORS_ALLOWED_ORIGINS: origins })).toThrow(
       ConfigurationError,
     );
   });

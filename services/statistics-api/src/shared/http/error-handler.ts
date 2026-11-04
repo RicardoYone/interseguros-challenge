@@ -7,6 +7,7 @@ const INTERNAL_ERROR_DETAIL = 'An unexpected error occurred.';
 const BODY_PARSER_DETAILS: Readonly<Record<string, string>> = {
   'entity.parse.failed': 'The request body is not valid JSON.',
   'entity.too.large': 'The request body exceeds the allowed size.',
+  'encoding.unsupported': 'Compressed request bodies are not accepted.',
 };
 
 interface HttpLikeError {
