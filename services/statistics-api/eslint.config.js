@@ -2,7 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/', 'coverage/', 'eslint.config.js', 'vitest.config.ts'] },
+  { ignores: ['dist/', 'coverage/', 'scripts/', 'eslint.config.js', 'vitest.config.ts'] },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
@@ -12,6 +12,16 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    // Supertest types every response body as `any`.
+    files: ['src/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
 );

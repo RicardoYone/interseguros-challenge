@@ -1,0 +1,161 @@
+openapi: 3.1.0
+info:
+  title: Statistics API
+  version: 1.0.0
+  description: Issues access tokens and calculates statistics over matrices.
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Reports that the service is running
+      security: []
+      responses:
+        '200':
+          description: The service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ok
+  /api/v1/auth/token:
+    post:
+      summary: Exchanges credentials for an access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          description: The credentials are valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessToken'
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '429': { $ref: '#/components/responses/Problem' }
+  /api/v1/statistics:
+    post:
+      summary: Calculates statistics over a list of matrices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticsRequest'
+            example:
+              matrices:
+                - name: Q
+                  values: [[1, 0], [0, 1]]
+                - name: R
+                  values: [[2, 4]]
+      responses:
+        '200':
+          description: The statistics of the matrices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+              example:
+                max: 4
+                min: 0
+                average: 1.3333333333333333
+                sum: 8
+                hasDiagonalMatrix: true
+                matrices:
+                  - { name: Q, isDiagonal: true }
+                  - { name: R, isDiagonal: false }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '413': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Problem:
+      description: The request failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Credentials:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 1, maxLength: 128 }
+        password: { type: string, minLength: 1, description: At most 72 bytes }
+    AccessToken:
+      type: object
+      required: [accessToken, expiresIn]
+      properties:
+        accessToken: { type: string }
+        expiresIn: { type: integer, description: Lifetime in seconds }
+    StatisticsRequest:
+      type: object
+      required: [matrices]
+      properties:
+        matrices:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [name, values]
+            properties:
+              name: { type: string, minLength: 1, maxLength: 64 }
+              values:
+                type: array
+                minItems: 1
+                description: Rows of equal length
+                items:
+                  type: array
+                  minItems: 1
+                  items: { type: number }
+    Statistics:
+      type: object
+      required: [max, min, average, sum, hasDiagonalMatrix, matrices]
+      properties:
+        max: { type: number }
+        min: { type: number }
+        average: { type: number }
+        sum: { type: number }
+        hasDiagonalMatrix: { type: boolean }
+        matrices:
+          type: array
+          items:
+            type: object
+            required: [name, isDiagonal]
+            properties:
+              name: { type: string }
+              isDiagonal: { type: boolean }
+    Problem:
+      type: object
+      description: RFC 9457 problem document
+      required: [type, title, status, detail, instance]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            required: [path, message]
+            properties:
+              path: { type: string }
+              message: { type: string }

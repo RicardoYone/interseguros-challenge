@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "generate-env": "node scripts/generate-env.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
