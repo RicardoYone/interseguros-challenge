@@ -77,6 +77,7 @@ Resultado esperado: todas las pruebas pasan, salvo la que apaga servicios, que q
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
-| 504 en la primera petición | Un servicio tardó más de 30 s en despertar | Repite la petición, o sube `STATISTICS_TIMEOUT` |
+| 504 en la primera petición | Un servicio tardó más de 30 s en despertar | Repite la petición, o sube `STATISTICS_TIMEOUT`. Si pasa de 35 s, sube también `terminationGracePeriodSeconds` en `infra/main.bicep`: debe superar ese timeout + 5 s, o un despliegue cortará las peticiones en curso |
+| Todo el flujo responde 401 aunque el login funcione | `qr-api` y `statistics-api` no coinciden en clave pública, `JWT_ISSUER` o `JWT_AUDIENCE` | Usa los mismos valores en ambas |
 | El navegador bloquea las llamadas a la API | El origen de CORS no coincide | Revisa `CORS_ALLOWED_ORIGINS` en la Container App |
 | El login responde 429 detrás del proxy, para todos | `TRUST_PROXY_HOPS` incorrecto | Debe valer 1 en Container Apps |

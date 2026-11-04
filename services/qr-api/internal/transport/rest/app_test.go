@@ -284,6 +284,18 @@ func TestCreateFactorization_invalidInput(t *testing.T) {
 		assert.Zero(t, api.calls.Load())
 	})
 
+	t.Run("accepts the identity encoding, which means no compression", func(t *testing.T) {
+		t.Parallel()
+
+		app, _ := newHealthyApp(t)
+		request := factorizeRequest(validMatrixBody)
+		request.Header.Set("Content-Encoding", "identity")
+
+		response, body := send(t, app, request)
+
+		assert.Equal(t, http.StatusOK, response.StatusCode, string(body))
+	})
+
 	// Uses a real connection because the server enforces this limit while reading it, a
 	// step that app.Test skips. Only the headers are sent: the server answers and closes
 	// as soon as it reads the declared length, so a client still writing the body could

@@ -89,8 +89,9 @@ func (c *Client) Calculate(
 		// statistics for not being representable.
 		return factorization.Statistics{}, factorization.ErrNumericOverflow
 	case http.StatusUnauthorized:
-		// The token can expire between this service's verification and the API's.
-		return factorization.Statistics{}, factorization.ErrAccessDenied
+		// The token can expire between this service's verification and the API's. It also
+		// happens when both services disagree on the key, issuer or audience.
+		return factorization.Statistics{}, factorization.ErrTokenRejected
 	default:
 		return factorization.Statistics{}, fmt.Errorf(
 			"%w: unexpected status %d",

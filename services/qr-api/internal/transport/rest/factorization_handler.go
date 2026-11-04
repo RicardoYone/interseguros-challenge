@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gofiber/fiber/v3"
 
@@ -46,7 +47,8 @@ func newCreateFactorizationHandler(factorizer Factorizer) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// Clients have no reason to compress a matrix, and refusing it leaves no
 		// decompression to attack. The raw body is read for the same reason.
-		if c.Get(fiber.HeaderContentEncoding) != "" {
+		encoding := c.Get(fiber.HeaderContentEncoding)
+		if encoding != "" && !strings.EqualFold(encoding, "identity") {
 			return errCompressedBody
 		}
 

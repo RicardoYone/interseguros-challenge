@@ -32,7 +32,7 @@ var knownErrors = []struct {
 	detail string
 }{
 	{errUnauthorized, http.StatusUnauthorized, "A valid access token is required."},
-	{factorization.ErrAccessDenied, http.StatusUnauthorized, "A valid access token is required."},
+	{factorization.ErrTokenRejected, http.StatusUnauthorized, "A valid access token is required."},
 	{errMalformedBody, http.StatusBadRequest, "The request body is not valid JSON."},
 	{errCompressedBody, http.StatusUnsupportedMediaType, "Compressed request bodies are not accepted."},
 	{errInvalidBody, http.StatusUnprocessableEntity, "The matrix must be an array of arrays of numbers."},

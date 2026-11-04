@@ -27,7 +27,7 @@ services:
       JWT_AUDIENCE: ${JWT_AUDIENCE:?run generate-env first}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?run generate-env first}
       STATISTICS_API_URL: http://statistics-api:3000
-    # Longer than the time qr-api gives in-flight requests to finish.
+    # Must exceed STATISTICS_TIMEOUT + 5 s, the time qr-api gives in-flight requests to finish.
     stop_grace_period: 40s
     ports:
       - "8080:8080"

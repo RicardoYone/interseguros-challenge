@@ -10,9 +10,18 @@ const BCRYPT_HASH = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 /** A malformed limit would mean something else entirely: "4 megabytes" parses as 4 bytes. */
 const BYTE_SIZE = /^\d+(kb|mb)$/i;
 
-/** True for a scheme and a host only, which rejects wildcards, empty items and URLs with a path. */
+/**
+ * True only for what a browser sends as its Origin: a lowercase http or https scheme and
+ * host, without the scheme's default port. Any other value could never match, so it would
+ * only surface later as a CORS failure.
+ */
 function isOrigin(value: string): boolean {
-  return URL.canParse(value) && new URL(value).origin === value;
+  if (!URL.canParse(value)) {
+    return false;
+  }
+  const url = new URL(value);
+
+  return ['http:', 'https:'].includes(url.protocol) && url.origin === value;
 }
 
 const originList = z

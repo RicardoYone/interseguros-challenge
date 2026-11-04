@@ -113,7 +113,7 @@ func TestClient_Calculate(t *testing.T) {
 		want   error
 	}{
 		{name: "server error", status: http.StatusInternalServerError, body: `{}`, want: factorization.ErrStatisticsUnavailable},
-		{name: "rejected token", status: http.StatusUnauthorized, body: `{}`, want: factorization.ErrAccessDenied},
+		{name: "rejected token", status: http.StatusUnauthorized, body: `{}`, want: factorization.ErrTokenRejected},
 		{name: "overflow reported by the API", status: http.StatusUnprocessableEntity, body: `{}`, want: factorization.ErrNumericOverflow},
 		{name: "malformed response", status: http.StatusOK, body: `not json`, want: factorization.ErrStatisticsUnavailable},
 		{name: "response missing its statistics", status: http.StatusOK, body: `{"max": 4}`, want: factorization.ErrStatisticsUnavailable},

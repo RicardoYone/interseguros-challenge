@@ -89,6 +89,7 @@ flowchart LR
 | Atributo | Decisión |
 |---|---|
 | Seguridad | JWT ES256 con algoritmo fijo y validación de `iss`, `aud` y `exp`; lista de orígenes CORS; límites de tamaño de cuerpo y dimensiones; límite de intentos de login; contenedores sin root; secretos fuera del repositorio |
+| CSP del frontend | Solo recursos propios y las dos APIs. Por eso `inlineCritical` está desactivado en `web/angular.json`: esa optimización activa los estilos con un script en línea, que la política bloquea |
 | Rendimiento | QR en O(mn²) con memoria contigua; estadísticas en una sola pasada O(N) |
 | Resiliencia | Timeout configurable de Go a Node, 30 s por defecto, sin reintentos; apagado ordenado en ambas APIs, y en Go con un plazo mayor que ese timeout |
 | Observabilidad | Logs JSON (`slog`, `pino`) y `X-Request-ID` propagado de Go a Node |

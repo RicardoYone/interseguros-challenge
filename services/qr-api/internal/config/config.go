@@ -102,8 +102,9 @@ func Load(lookup func(string) string) (Config, error) {
 	return cfg, nil
 }
 
-// isNotOrigin rejects anything other than a scheme and a host, such as an empty item
-// left by a trailing comma, a wildcard, or a URL with a path.
+// isNotOrigin rejects anything that differs from what a browser sends as its Origin: a
+// lowercase http or https scheme and host, without the scheme's default port. Any other
+// value could never match, so it would only surface later as a CORS failure.
 func isNotOrigin(value string) bool {
 	parsed, err := url.Parse(value)
 	if err != nil {
@@ -111,8 +112,11 @@ func isNotOrigin(value string) bool {
 	}
 
 	isHTTP := parsed.Scheme == "http" || parsed.Scheme == "https"
+	hasDefaultPort := (parsed.Scheme == "http" && parsed.Port() == "80") ||
+		(parsed.Scheme == "https" && parsed.Port() == "443")
+	isOnlySchemeAndHost := value == parsed.Scheme+"://"+strings.ToLower(parsed.Host)
 
-	return !isHTTP || parsed.Host == "" || parsed.Path != "" || parsed.RawQuery != ""
+	return !isHTTP || parsed.Host == "" || hasDefaultPort || !isOnlySchemeAndHost
 }
 
 func splitList(value string) []string {

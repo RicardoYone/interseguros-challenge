@@ -154,7 +154,7 @@ resource qrApi 'Microsoft.App/containerApps@2024-03-01' = {
       }
     }
     template: {
-      // Longer than the time qr-api gives in-flight requests to finish.
+      // Must exceed STATISTICS_TIMEOUT + 5 s, the time qr-api gives in-flight requests to finish.
       terminationGracePeriodSeconds: 40
       containers: [
         {
