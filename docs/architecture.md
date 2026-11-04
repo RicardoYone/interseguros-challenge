@@ -58,6 +58,7 @@ Ambas APIs responden con un único formato, RFC 9457 (`application/problem+json`
 |---|---|
 | JSON mal formado | 400 |
 | Sin token, token inválido o credenciales incorrectas | 401 |
+| Cuerpo mayor al tamaño permitido | 413 |
 | Matriz vacía, filas desiguales, excede el tamaño máximo o desborde numérico | 422 |
 | Demasiados intentos de inicio de sesión | 429 |
 | Node responde con error o no se puede alcanzar | 502 |
