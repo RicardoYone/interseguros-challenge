@@ -1,10 +1,12 @@
 package rest_test
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net"
@@ -259,8 +261,10 @@ func TestCreateFactorization_invalidInput(t *testing.T) {
 		})
 	}
 
-	// Uses a real listener because the server enforces this limit while reading the
-	// connection, a step that app.Test skips.
+	// Uses a real connection because the server enforces this limit while reading it, a
+	// step that app.Test skips. Only the headers are sent: the server answers and closes
+	// as soon as it reads the declared length, so a client still writing the body could
+	// fail before reading the response.
 	t.Run("responds 413 to a body over the limit", func(t *testing.T) {
 		t.Parallel()
 
@@ -270,13 +274,19 @@ func TestCreateFactorization_invalidInput(t *testing.T) {
 		go func() { _ = app.Listener(listener, fiber.ListenConfig{DisableStartupMessage: true}) }()
 		t.Cleanup(func() { _ = app.Shutdown() })
 
-		oversized := `{"matrix":[[` + strings.Repeat("1", 3<<20) + `]]}`
-		request := factorizeRequest(oversized)
-		request.RequestURI = ""
-		request.URL.Scheme = "http"
-		request.URL.Host = listener.Addr().String()
+		connection, err := net.Dial("tcp", listener.Addr().String())
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = connection.Close() })
 
-		response, err := http.DefaultClient.Do(request)
+		_, err = fmt.Fprintf(
+			connection,
+			"POST %s HTTP/1.1\r\nHost: test\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n",
+			factorizationsPath,
+			3<<20,
+		)
+		require.NoError(t, err)
+
+		response, err := http.ReadResponse(bufio.NewReader(connection), nil)
 		require.NoError(t, err)
 		t.Cleanup(func() { _ = response.Body.Close() })
 		body, err := io.ReadAll(response.Body)
