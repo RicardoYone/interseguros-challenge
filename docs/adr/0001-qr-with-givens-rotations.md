@@ -33,9 +33,26 @@ sobre "rotación" también tiene sentido dentro de esta solución.
 
 ## Consecuencias
 
-- **Costo:** mismo orden que Householder, O(mn²), con una constante mayor. El benchmark contra gonum mide la diferencia real.
+- **Costo:** mismo orden que Householder, O(mn²), con una constante mayor en matrices densas grandes (ver la medición).
 - **Implementación propia:** el riesgo numérico se cubre con pruebas de propiedades, fuzzing y gonum como oráculo, solo
   en las pruebas.
 - **Estabilidad:** cada rotación escala sus valores antes de dividir y usa `math.Hypot`. Esto evita desbordes y mantiene
   c² + s² = 1 con valores subnormales. El fuzzing encontró este caso: sin escalar, Q dejaba de ser ortogonal.
 - **Determinismo:** la diagonal de R se normaliza a valores no negativos, así una entrada siempre da la misma salida.
+
+## Medición
+
+Una corrida corta en un portátil con Intel i5-1235U. Sirve para ver el orden de magnitud, no como cifra exacta.
+Se repite con `go test -run=^$ -bench=. -benchmem ./internal/factorization/`.
+
+| Matriz | Givens | Householder (gonum) | Asignaciones de memoria (Givens / gonum) |
+|---|---|---|---|
+| 10×10 | 3.1 µs | 4.6 µs | 3 / 14 |
+| 100×100 | 976 µs | 347 µs | 3 / 15 |
+| 200×200 | 6.3 ms | 3.8 ms | 3 / 122 |
+| 200×20 | 0.31 ms | 0.45 ms | 3 / 16 |
+
+- **Lectura:** en matrices densas grandes Householder es más rápido, entre 1.6 y 2.8 veces en estas corridas. Con el
+  máximo permitido de 200×200 el cálculo tarda unos 6 ms, así que la diferencia no afecta a la API.
+- **Límite de la comparación:** en la fila 200×20, gonum forma la Q completa de 200×200 y Givens solo la reducida.
+  Esa fila favorece a Givens y no prueba que sea más rápido en matrices altas.
