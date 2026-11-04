@@ -36,5 +36,6 @@ sobre "rotación" también tiene sentido dentro de esta solución.
 - **Costo:** mismo orden que Householder, O(mn²), con una constante mayor. El benchmark contra gonum mide la diferencia real.
 - **Implementación propia:** el riesgo numérico se cubre con pruebas de propiedades, fuzzing y gonum como oráculo, solo
   en las pruebas.
-- **Estabilidad:** `math.Hypot` evita desbordes intermedios al calcular cada rotación.
+- **Estabilidad:** cada rotación escala sus valores antes de dividir y usa `math.Hypot`. Esto evita desbordes y mantiene
+  c² + s² = 1 con valores subnormales. El fuzzing encontró este caso: sin escalar, Q dejaba de ser ortogonal.
 - **Determinismo:** la diagonal de R se normaliza a valores no negativos, así una entrada siempre da la misma salida.

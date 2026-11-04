@@ -25,4 +25,5 @@ identidad. Cada rotación toca solo k columnas, así que formar Q cuesta O(mk²)
 - **Efecto en las estadísticas:** máximo, mínimo, promedio y suma se calculan sobre la Q reducida y la R reducida.
 - **Propiedad de Q:** QᵀQ = I siempre se cumple, pero QQᵀ = I solo cuando m ≤ n. Las pruebas verifican la primera.
 - **Matrices anchas (m < n):** R es trapezoidal superior, de k×n.
-- **Rango incompleto:** la factorización sigue siendo válida. R puede tener ceros en la diagonal, y Q sigue siendo ortonormal.
+- **Rango incompleto:** la factorización sigue siendo válida. R tiene valores cercanos a cero en la diagonal y Q sigue
+  siendo ortonormal, pero sus últimas columnas no son únicas: el ruido de redondeo decide su signo.
