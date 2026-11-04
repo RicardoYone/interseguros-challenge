@@ -72,7 +72,7 @@ fallar las pruebas si eso se rompe.
 ```mermaid
 flowchart LR
     subgraph Go[qr-api]
-        H[transport/http] --> F[factorization]
+        H[transport/rest] --> F[factorization]
         S[statistics: cliente HTTP] -. implementa el puerto .-> F
     end
     subgraph Node[statistics-api]

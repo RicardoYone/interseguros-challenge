@@ -1,0 +1,50 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - depguard
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - nolintlint
+    - revive
+    - testifylint
+    - unconvert
+    - unparam
+  settings:
+    depguard:
+      rules:
+        domain:
+          files:
+            - "**/internal/factorization/*.go"
+            - "!**/*_test.go"
+          deny:
+            - pkg: github.com/gofiber/fiber
+              desc: the domain must not know about the HTTP framework
+            - pkg: net/http
+              desc: the domain must not know about HTTP
+            - pkg: github.com/golang-jwt/jwt
+              desc: the domain must not know about authentication
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    rules:
+      # Fixed test data and fake servers: neither reaches production. The test helper
+      # closes response bodies through t.Cleanup, which bodyclose cannot follow.
+      - path: _test\.go
+        linters:
+          - bodyclose
+          - errcheck
+          - gosec
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports

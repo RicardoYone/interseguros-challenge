@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: QR Factorization API
+  version: 1.0.0
+  description: >-
+    Computes the reduced QR factorization of a rectangular matrix using Givens
+    rotations, and returns it with the statistics calculated by the statistics API.
+    Tokens are issued by the statistics API.
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Reports that the service is running
+      security: []
+      responses:
+        '200':
+          description: The service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ok
+  /api/v1/qr-factorizations:
+    post:
+      summary: Computes the QR factorization of a matrix
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FactorizationRequest'
+            example:
+              matrix: [[3], [4]]
+      responses:
+        '200':
+          description: The factorization and the statistics of Q and R
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FactorizationResponse'
+              example:
+                q: [[0.6], [0.8]]
+                r: [[5]]
+                statistics:
+                  max: 5
+                  min: 0.6
+                  average: 2.1333333333333333
+                  sum: 6.4
+                  hasDiagonalMatrix: true
+                  matrices:
+                    - { name: Q, isDiagonal: false }
+                    - { name: R, isDiagonal: true }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '413': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '502': { $ref: '#/components/responses/Problem' }
+        '504': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Problem:
+      description: The request failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Matrix:
+      type: array
+      minItems: 1
+      description: Rows of equal length
+      items:
+        type: array
+        minItems: 1
+        items: { type: number }
+    FactorizationRequest:
+      type: object
+      required: [matrix]
+      properties:
+        matrix:
+          allOf:
+            - $ref: '#/components/schemas/Matrix'
+          maxItems: 200
+          description: At most 200 rows and 200 columns
+    FactorizationResponse:
+      type: object
+      required: [q, r, statistics]
+      properties:
+        q:
+          allOf:
+            - $ref: '#/components/schemas/Matrix'
+          description: m×k matrix with orthonormal columns, where k = min(m, n)
+        r:
+          allOf:
+            - $ref: '#/components/schemas/Matrix'
+          description: k×n upper triangular matrix with a non-negative diagonal
+        statistics:
+          $ref: '#/components/schemas/Statistics'
+    Statistics:
+      type: object
+      required: [max, min, average, sum, hasDiagonalMatrix, matrices]
+      properties:
+        max: { type: number }
+        min: { type: number }
+        average: { type: number }
+        sum: { type: number }
+        hasDiagonalMatrix: { type: boolean }
+        matrices:
+          type: array
+          items:
+            type: object
+            required: [name, isDiagonal]
+            properties:
+              name: { type: string }
+              isDiagonal: { type: boolean }
+    Problem:
+      type: object
+      description: RFC 9457 problem document
+      required: [type, title, status, detail, instance]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
