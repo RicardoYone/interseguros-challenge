@@ -7,6 +7,18 @@ const MIN_FIXED_MAGNITUDE = 1e-3;
 const FRACTION_DIGITS = 4;
 const SIGNIFICANT_DIGITS = 5;
 
+/** Returns the largest absolute value. A loop, because spreading every value could exceed the call stack. */
+export function maxMagnitude(matrix: Matrix): number {
+  let largest = 0;
+  for (const row of matrix) {
+    for (const value of row) {
+      largest = Math.max(largest, Math.abs(value));
+    }
+  }
+
+  return largest;
+}
+
 /**
  * Multiplies Q by R and returns the largest difference with A. It lets the page show,
  * from the values it received, that the factorization rebuilds the original matrix.

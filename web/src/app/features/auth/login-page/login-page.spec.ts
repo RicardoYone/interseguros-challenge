@@ -63,6 +63,17 @@ describe('LoginPage', () => {
     http.expectNone(TOKEN_URL);
   });
 
+  it('says which field is missing when the form is incomplete', async () => {
+    fill('#username', 'demo');
+
+    await submit();
+
+    expect(page.textContent).toContain('Escribe tu contraseña.');
+    expect(page.textContent).not.toContain('Escribe tu usuario.');
+    expect(page.querySelector('#password')?.getAttribute('aria-invalid')).toBe('true');
+    expect(page.querySelector('#username')?.getAttribute('aria-invalid')).toBe('false');
+  });
+
   it('signs in with the typed credentials and opens the main page', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fill('#username', 'demo');

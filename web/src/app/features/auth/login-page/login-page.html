@@ -13,7 +13,11 @@
         autocomplete="username"
         autocapitalize="none"
         spellcheck="false"
+        [attr.aria-invalid]="showError('username')"
       />
+      @if (showError('username')) {
+        <span class="pen-note field__error">Escribe tu usuario.</span>
+      }
     </label>
 
     <label class="field">
@@ -24,7 +28,11 @@
         type="password"
         formControlName="password"
         autocomplete="current-password"
+        [attr.aria-invalid]="showError('password')"
       />
+      @if (showError('password')) {
+        <span class="pen-note field__error">Escribe tu contraseña.</span>
+      }
     </label>
 
     @if (errorMessage(); as message) {

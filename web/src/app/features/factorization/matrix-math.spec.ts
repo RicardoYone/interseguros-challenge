@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { formatNumber, maxReconstructionError } from './matrix-math';
+import { formatNumber, maxMagnitude, maxReconstructionError } from './matrix-math';
+
+describe('maxMagnitude', () => {
+  it('returns the largest absolute value', () => {
+    expect(maxMagnitude([[1, -7], [3, 4]])).toBe(7);
+  });
+
+  it('handles the largest matrix the API accepts', () => {
+    const row = new Array<number>(200).fill(2);
+
+    expect(maxMagnitude(new Array<number[]>(200).fill(row))).toBe(2);
+  });
+});
 
 describe('maxReconstructionError', () => {
   it('is zero when Q times R rebuilds the matrix exactly', () => {

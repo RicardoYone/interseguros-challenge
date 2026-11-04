@@ -33,6 +33,12 @@ export class LoginPage {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
+  protected showError(field: 'username' | 'password'): boolean {
+    const control = this.form.controls[field];
+
+    return control.touched && control.invalid;
+  }
+
   protected submit(): void {
     if (this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();

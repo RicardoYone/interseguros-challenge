@@ -16,7 +16,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { describeHttpError } from '../../../core/http/error-message';
 import type { FactorizationResult } from '../factorization.model';
 import { FactorizationService } from '../factorization.service';
-import { maxReconstructionError } from '../matrix-math';
+import { maxMagnitude, maxReconstructionError } from '../matrix-math';
 import { type Matrix, parseMatrix } from '../matrix-parser';
 import { MatrixView } from '../matrix-view/matrix-view';
 import { StatisticsPanel } from '../statistics-panel/statistics-panel';
@@ -71,7 +71,7 @@ export class FactorizationPage {
 
     const { input, result } = calculation;
     const error = maxReconstructionError(input, result.q, result.r);
-    const scale = Math.max(1, ...input.flat().map((value) => Math.abs(value)));
+    const scale = Math.max(1, maxMagnitude(input));
 
     return { rebuilds: error <= RECONSTRUCTION_TOLERANCE * scale, error: error.toExponential(1) };
   });
