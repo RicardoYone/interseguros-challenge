@@ -24,7 +24,7 @@ describe('application', () => {
       const response = await request(app).get('/nothing-here');
 
       expect(response.status).toBe(404);
-      expect(response.type).toBe('application/problem+json');
+      expect(response.headers['content-type']).toBe('application/problem+json');
       expect(response.body).toMatchObject({ status: 404, title: 'Not Found' });
     });
 

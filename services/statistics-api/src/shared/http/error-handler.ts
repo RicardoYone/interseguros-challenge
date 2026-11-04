@@ -52,15 +52,18 @@ export function errorHandler(
     request.log.error({ err: error }, 'request failed unexpectedly');
   }
 
+  // Not response.json(), which appends a charset that the media type does not define.
   response
     .status(problem.status)
-    .type('application/problem+json')
-    .json({
-      type: 'about:blank',
-      title: problem.title,
-      status: problem.status,
-      detail: problem.message,
-      instance: request.path,
-      ...(problem.errors === undefined ? {} : { errors: problem.errors }),
-    });
+    .setHeader('Content-Type', 'application/problem+json')
+    .end(
+      JSON.stringify({
+        type: 'about:blank',
+        title: problem.title,
+        status: problem.status,
+        detail: problem.message,
+        instance: request.path,
+        ...(problem.errors === undefined ? {} : { errors: problem.errors }),
+      }),
+    );
 }

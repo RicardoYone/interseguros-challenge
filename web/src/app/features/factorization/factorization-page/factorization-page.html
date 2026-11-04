@@ -56,7 +56,7 @@
   </form>
 
   @if (calculation(); as current) {
-    <section class="solution" aria-label="Resultado">
+    <section #solution class="solution" aria-label="Resultado">
       <div class="equation">
         <app-matrix-view class="equation__term" name="A" [rows]="current.input" />
         <span class="equation__operator" aria-hidden="true">=</span>

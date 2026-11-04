@@ -56,6 +56,8 @@ describe('FactorizationPage', () => {
   const alertText = (): string | undefined => page.querySelector('[role="alert"]')?.textContent;
 
   beforeEach(async () => {
+    // jsdom does not implement scrolling.
+    Element.prototype.scrollIntoView = vi.fn();
     TestBed.configureTestingModule({
       imports: [FactorizationPage],
       providers: [
@@ -93,6 +95,20 @@ describe('FactorizationPage', () => {
       [...matrix.querySelectorAll('td')].map((cell) => cell.textContent.trim()),
     );
     expect(values).toEqual([['3', '4'], ['0.6', '0.8'], ['5']]);
+  });
+
+  it('brings the result into view, since it may appear below the fold', async () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    await typeMatrix('3\n4');
+    await submit();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    http.expectOne(FACTORIZATIONS_URL).flush(RESPONSE);
+    await fixture.whenStable();
+
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(scrollIntoView.mock.contexts[0]).toBe(page.querySelector('.solution'));
   });
 
   it('shows the statistics returned by the API', async () => {

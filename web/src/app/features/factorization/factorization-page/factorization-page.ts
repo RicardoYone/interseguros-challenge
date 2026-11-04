@@ -1,10 +1,13 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
+  type ElementRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -72,6 +75,15 @@ export class FactorizationPage {
 
     return { rebuilds: error <= RECONSTRUCTION_TOLERANCE * scale, error: error.toExponential(1) };
   });
+
+  private readonly solution = viewChild<ElementRef<HTMLElement>>('solution');
+
+  constructor() {
+    // On short screens the result appears below the fold, where a click would seem to do nothing.
+    afterRenderEffect(() => {
+      this.solution()?.nativeElement.scrollIntoView({ block: 'start' });
+    });
+  }
 
   protected useExample(text: string): void {
     this.form.controls.matrix.setValue(text);
