@@ -15,4 +15,16 @@ describe('createEnvironment', () => {
 
     expect(environment.DEMO_USERNAME).toBe('demo');
   });
+
+  it('leaves the plain password out by default', async () => {
+    const environment = await createEnvironment('secret');
+
+    expect(environment).not.toHaveProperty('DEMO_PASSWORD');
+  });
+
+  it('includes the plain password only when asked to keep it', async () => {
+    const environment = await createEnvironment('secret', { keepPassword: true });
+
+    expect(environment.DEMO_PASSWORD).toBe('secret');
+  });
 });

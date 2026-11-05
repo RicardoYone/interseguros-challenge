@@ -1,5 +1,5 @@
-# Runs the whole system locally. Generate the .env file it reads with:
-#   npm --prefix services/statistics-api run generate-env
+# Runs the whole system locally. Start it with `npm start`, which creates the .env file
+# this reads when it is missing.
 #
 # Each service receives only the variables it needs: qr-api gets the public key and
 # never the private one, which is what prevents it from forging tokens.
@@ -8,13 +8,13 @@ services:
     build: ./services/statistics-api
     environment:
       TZ: America/Lima
-      JWT_PRIVATE_KEY_B64: ${JWT_PRIVATE_KEY_B64:?run generate-env first}
-      JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64:?run generate-env first}
-      JWT_ISSUER: ${JWT_ISSUER:?run generate-env first}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:?run generate-env first}
-      DEMO_USERNAME: ${DEMO_USERNAME:?run generate-env first}
-      DEMO_PASSWORD_HASH_B64: ${DEMO_PASSWORD_HASH_B64:?run generate-env first}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?run generate-env first}
+      JWT_PRIVATE_KEY_B64: ${JWT_PRIVATE_KEY_B64:?run npm start first}
+      JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64:?run npm start first}
+      JWT_ISSUER: ${JWT_ISSUER:?run npm start first}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?run npm start first}
+      DEMO_USERNAME: ${DEMO_USERNAME:?run npm start first}
+      DEMO_PASSWORD_HASH_B64: ${DEMO_PASSWORD_HASH_B64:?run npm start first}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?run npm start first}
     ports:
       - "3000:3000"
 
@@ -22,10 +22,10 @@ services:
     build: ./services/qr-api
     environment:
       TZ: America/Lima
-      JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64:?run generate-env first}
-      JWT_ISSUER: ${JWT_ISSUER:?run generate-env first}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:?run generate-env first}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?run generate-env first}
+      JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64:?run npm start first}
+      JWT_ISSUER: ${JWT_ISSUER:?run npm start first}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?run npm start first}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?run npm start first}
       STATISTICS_API_URL: http://statistics-api:3000
     # Must exceed STATISTICS_TIMEOUT + 5 s, the time qr-api gives in-flight requests to finish.
     stop_grace_period: 40s

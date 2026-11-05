@@ -11,26 +11,21 @@ Las credenciales se entregan por separado. Los servicios escalan a cero, así qu
 
 ## Cómo probarlo en local
 
-Necesitas Docker y Node.js 24.15 o superior.
+Necesitas Docker Desktop prendido y Node.js 24 o superior. Un solo comando prepara y levanta todo:
 
-1. **Genera las claves y el usuario de demo.** Se guardan en un `.env` que no se sube al repositorio, y el comando
-   muestra la contraseña una sola vez:
+```bash
+npm start
+```
 
-   ```bash
-   npm --prefix services/statistics-api ci
-   ```
+Al terminar muestra la dirección, el usuario y la contraseña. Abre <http://localhost:4200> e inicia sesión.
 
-   ```bash
-   npm --prefix services/statistics-api run generate-env
-   ```
+La primera vez crea un `.env` con claves y contraseña nuevas, que no se sube al repositorio. Las siguientes lo reutiliza.
 
-2. **Levanta el sistema:**
-
-   ```bash
-   docker compose up --build
-   ```
-
-3. **Abre <http://localhost:4200>** e inicia sesión con el usuario `demo` y la contraseña del paso 1.
+| Para… | Comando |
+|---|---|
+| Apagar el sistema | `npm stop` |
+| Ver los logs | `docker compose logs --follow` |
+| Cambiar claves y contraseña | `npm start -- --reset` |
 
 ### Probar las APIs sin el frontend
 
@@ -78,7 +73,8 @@ El enunciado pide tomar decisiones y sustentarlas. Estas son las principales:
 | `npm test -- --watch=false` en `web` | Parser, sesión, interceptor, pantallas, arquitectura |
 | `node tests/e2e/run.mjs` | Flujo completo contra contenedores reales, con secretos desechables |
 
-Las pruebas E2E necesitan haber corrido `npm ci` en `services/statistics-api`.
+Las pruebas E2E necesitan haber corrido `npm ci` en `services/statistics-api` y usan los mismos puertos que `npm start`:
+apaga el sistema con `npm stop` antes de correrlas.
 
 ## Desarrollo sin Docker
 

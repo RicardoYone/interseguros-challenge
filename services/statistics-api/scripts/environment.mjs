@@ -11,8 +11,9 @@ const toBase64 = (value) => Buffer.from(value).toString('base64');
 /**
  * Creates the variables the services need: a new ES256 key pair and the demo user.
  * The secrets only exist in the returned object: the caller decides where they go.
+ * `keepPassword` adds the plain password, so a local start can show it every time.
  */
-export async function createEnvironment(password) {
+export async function createEnvironment(password, { keepPassword = false } = {}) {
   const passwordBytes = Buffer.byteLength(password);
   if (passwordBytes === 0 || passwordBytes > MAX_PASSWORD_BYTES) {
     throw new Error(`the password must have 1 to ${MAX_PASSWORD_BYTES} bytes, or the login would reject it`);
@@ -32,5 +33,6 @@ export async function createEnvironment(password) {
     DEMO_USERNAME: 'demo',
     DEMO_PASSWORD_HASH_B64: toBase64(await bcrypt.hash(password, BCRYPT_ROUNDS)),
     CORS_ALLOWED_ORIGINS: 'http://localhost:4200',
+    ...(keepPassword ? { DEMO_PASSWORD: password } : {}),
   };
 }
