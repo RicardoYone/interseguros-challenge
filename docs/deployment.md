@@ -32,8 +32,10 @@ az group delete --name <resource-group>
    az ad app create --display-name interseguros-deploy
    az ad sp create --id <app-id>
    az role assignment create --assignee <app-id> --role Contributor --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>
-   az ad app federated-credential create --id <app-id> --parameters '{"name":"github-main","issuer":"https://token.actions.githubusercontent.com","subject":"repo:<owner>/<repo>:ref:refs/heads/main","audiences":["api://AzureADTokenExchange"]}'
+   az ad app federated-credential create --id <app-id> --parameters '{"name":"github-main","issuer":"https://token.actions.githubusercontent.com","subject":"repo:<owner>@<owner-id>/<repo>@<repo-id>:ref:refs/heads/main","audiences":["api://AzureADTokenExchange"]}'
    ```
+
+   El `subject` lleva los identificadores numéricos del dueño y del repositorio, porque así los presenta GitHub en el token. Se obtienen con `gh api repos/<owner>/<repo> --jq '.owner.id, .id'`. Si el login falla con `AADSTS700213`, el error muestra el valor que GitHub presentó.
 
 3. **Genera los secretos** en un archivo `.env` local, fuera del repositorio. El comando muestra la contraseña una sola vez:
 
