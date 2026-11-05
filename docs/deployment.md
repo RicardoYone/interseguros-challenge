@@ -12,10 +12,14 @@ Las APIs corren en Azure Container Apps con escala a cero y el frontend en Azure
 | Log Analytics | Por GB ingerido, retención de 30 días | Muy bajo con poco uso |
 | Imágenes en GitHub Container Registry | Paquetes públicos | Sin costo |
 
-Consulta los precios vigentes de Azure antes de desplegar. Al terminar la evaluación, borra todo con:
+Consulta los precios vigentes de Azure antes de desplegar. Al terminar la evaluación, borra los recursos y la identidad de despliegue, que vive fuera del grupo:
 
 ```bash
 az group delete --name <resource-group>
+```
+
+```bash
+az ad app delete --id <app-id>
 ```
 
 ## Primera vez
@@ -74,6 +78,8 @@ QR_API_URL=<qrApiUrl> STATISTICS_API_URL=<statisticsApiUrl> DEMO_PASSWORD=<passw
 ```
 
 Resultado esperado: todas las pruebas pasan, salvo la que apaga servicios, que queda omitida.
+
+**Arranque en frío medido** con ambos servicios en cero réplicas, en una sola medición: el login tardó 12.4 s y la factorización siguiente 8.1 s. Los servicios tardaron unos 7 minutos en escalar a cero tras dejar de recibir tráfico.
 
 ## Problemas frecuentes
 
