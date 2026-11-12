@@ -47,6 +47,9 @@ az ad app delete --id <app-id>
    npm --prefix services/statistics-api run generate-env
    ```
 
+   Escribe el `.env` de la raíz, el mismo que usa `npm start`: si ya levantaste el sistema en local, reemplazarlo
+   con `--force` cambia también tu contraseña local.
+
 4. **Configura el repositorio de GitHub** (*Settings → Secrets and variables → Actions*):
 
    | Tipo | Nombre | Valor |
