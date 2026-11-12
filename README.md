@@ -3,6 +3,12 @@
 Sistema de dos APIs y un frontend. Una API en Go calcula la factorización QR de una matriz rectangular, otra en Node.js
 calcula estadísticas sobre el resultado, y un frontend en Angular muestra la ecuación `A = Q · R` y comprueba que se cumple.
 
+## Demo en línea
+
+<https://gray-mushroom-01fc3590f.5.azurestaticapps.net>
+
+Las credenciales se entregan por separado. Los servicios escalan a cero, así que la primera petición tras un rato sin uso tarda más.
+
 ## Cómo probarlo en local
 
 Necesitas Docker Desktop prendido y Node.js 24 o superior. Un solo comando prepara y levanta todo:
