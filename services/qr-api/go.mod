@@ -1,6 +1,6 @@
 module github.com/RicardoYone/interseguros-challenge/services/qr-api
 
-go 1.26.10
+go 1.26.11
 
 require (
 	github.com/gofiber/fiber/v3 v3.6.1
