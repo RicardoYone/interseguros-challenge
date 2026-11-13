@@ -1,4 +1,4 @@
-import type { RequestHandler } from 'express';
+import type { RequestHandler, Response } from 'express';
 import { ProblemError } from '../../shared/http/problem.js';
 import { InvalidTokenError } from '../domain/errors.js';
 import type { TokenVerifier } from '../domain/ports.js';
@@ -9,19 +9,24 @@ const BEARER_PREFIX = 'Bearer ';
 export function createRequireAuth(tokenVerifier: TokenVerifier): RequestHandler {
   return async (request, response, next) => {
     const header = request.headers.authorization;
+    if (!header?.startsWith(BEARER_PREFIX)) {
+      throw unauthorized(response);
+    }
 
     try {
-      if (!header?.startsWith(BEARER_PREFIX)) {
-        throw new InvalidTokenError();
-      }
       await tokenVerifier.verify(header.slice(BEARER_PREFIX.length));
-      next();
     } catch (error) {
       if (error instanceof InvalidTokenError) {
-        response.setHeader('WWW-Authenticate', 'Bearer');
-        throw new ProblemError(401, 'A valid access token is required.');
+        throw unauthorized(response);
       }
       throw error;
     }
+
+    next();
   };
+}
+
+function unauthorized(response: Response): ProblemError {
+  response.setHeader('WWW-Authenticate', 'Bearer');
+  return new ProblemError(401, 'A valid access token is required.');
 }

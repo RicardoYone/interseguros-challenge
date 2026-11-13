@@ -64,6 +64,7 @@ describe('POST /api/v1/statistics', () => {
       .send({ matrices: [{ name: 'A', values: [[1]] }] });
 
     expect(response.status).toBe(401);
+    expect(response.headers['www-authenticate']).toBe('Bearer');
   });
 
   it('rejects an authorization header that is not a bearer token', async () => {
@@ -73,6 +74,7 @@ describe('POST /api/v1/statistics', () => {
       .send({ matrices: [{ name: 'A', values: [[1]] }] });
 
     expect(response.status).toBe(401);
+    expect(response.headers['www-authenticate']).toBe('Bearer');
   });
 
   it.each([
