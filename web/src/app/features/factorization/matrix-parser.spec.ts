@@ -23,6 +23,8 @@ describe('parseMatrix', () => {
     ['hexadecimal, which Number() would accept', '0x10', 'El valor «0x10» de la fila 1 no es un número.'],
     ['Infinity, which Number() would accept', 'Infinity', 'El valor «Infinity» de la fila 1 no es un número.'],
     ['a number out of range', '1e999', 'El valor «1e999» de la fila 1 no es un número.'],
+    ['a trailing comma', '1 2,', 'La fila 1 tiene un valor vacío. Revisa las comas.'],
+    ['a leading comma', '1 2\n,3 4', 'La fila 2 tiene un valor vacío. Revisa las comas.'],
   ])('rejects %s and says why', (_description, text, message) => {
     expect(parseMatrix(text)).toEqual({ valid: false, message });
   });

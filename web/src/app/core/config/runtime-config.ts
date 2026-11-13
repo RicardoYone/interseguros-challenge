@@ -7,3 +7,23 @@ export interface RuntimeConfig {
 }
 
 export const RUNTIME_CONFIG = new InjectionToken<RuntimeConfig>('RUNTIME_CONFIG');
+
+/** Checks config.json, so that a typo fails at startup instead of on the first request. */
+export function parseRuntimeConfig(value: unknown): RuntimeConfig {
+  const statisticsApiUrl = readText(value, 'statisticsApiUrl');
+  const qrApiUrl = readText(value, 'qrApiUrl');
+  if (statisticsApiUrl === undefined || qrApiUrl === undefined) {
+    throw new Error('config.json must define statisticsApiUrl and qrApiUrl');
+  }
+
+  return { statisticsApiUrl, qrApiUrl };
+}
+
+function readText(value: unknown, key: keyof RuntimeConfig): string | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+  const field: unknown = Reflect.get(value, key);
+
+  return typeof field === 'string' && field !== '' ? field : undefined;
+}

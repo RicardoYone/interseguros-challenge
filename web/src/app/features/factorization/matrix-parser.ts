@@ -27,6 +27,10 @@ export function parseMatrix(text: string): ParsedMatrix {
   for (const [index, line] of lines.entries()) {
     const row: number[] = [];
     for (const token of line.split(VALUE_SEPARATOR)) {
+      // A comma at the start or end of a line leaves an empty value.
+      if (token === '') {
+        return invalid(`La fila ${index + 1} tiene un valor vacío. Revisa las comas.`);
+      }
       const value = Number(token);
       if (!DECIMAL_NUMBER.test(token) || !Number.isFinite(value)) {
         return invalid(`El valor «${token}» de la fila ${index + 1} no es un número.`);
